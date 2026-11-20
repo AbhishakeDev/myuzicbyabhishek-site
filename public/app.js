@@ -205,16 +205,17 @@ form.addEventListener("submit", async e => {
   sendBtn.classList.add("sending");
   status.textContent = "";
   try {
+    // FormData keeps this a "simple" CORS request: no preflight for the API's firewall to reject
+    const body = new FormData(form);
+    body.delete("botcheck");
+    body.append("access_key", CONFIG.web3formsKey);
+    body.append("subject", `New inquiry: ${data.service} (from ${data.name})`);
+    body.append("from_name", "myuzicbyabhishek website");
+    body.append("replyto", data.email);
     const res = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        access_key: CONFIG.web3formsKey,
-        subject: `New inquiry: ${data.service} (from ${data.name})`,
-        from_name: "myuzicbyabhishek website",
-        replyto: data.email,
-        ...data,
-      }),
+      headers: { Accept: "application/json" },
+      body,
     });
     const json = await res.json();
     if (!json.success) throw new Error(json.message);
